@@ -9,7 +9,7 @@ int main(void) {
   unsigned char temp[2], iread[2];
 
   temp[0] = 0x01;
-  temp[1] = 0xa7;
+  temp[1] = 0xe3;
 
   iread[0] = 0x01;
   iread[1] = 0xff;
