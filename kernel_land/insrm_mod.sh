@@ -38,7 +38,7 @@ if [ $opt = "i" ]
 
     # now install the module
     echo "installing the module"
-    ./dio_mknod.sh
+    ./${mod}_mknod.sh
 
 fi
 

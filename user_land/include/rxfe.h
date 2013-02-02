@@ -1,20 +1,9 @@
 
-#ifndef _RXFE_H
-#define _RXFE_H
+#ifndef DEF_GUARD_RXFE_H
+#define DEF_GUARD_RXFE_H
 
-/* settings structure */
-struct RXFESettings {
-  
-  unsigned char amp1    ;  
-  unsigned char amp2    ; 
-  unsigned char amp3    ;
-  unsigned char att1    ;
-  unsigned char att2    ;
-  unsigned char att3    ;
-  unsigned char att4    ;
-  unsigned char if_mode ;
-
-};
+#include "rosmsg.h"
+#include "rtypes.h"
 
 #define IF_MODE 1
 #define RF_MODE 0

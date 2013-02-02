@@ -1,5 +1,5 @@
-#ifndef _DIO_USER_DEFS_H
-#define _DIO_USER_DEFS_H
+#ifndef DEF_GUARD_DIO_USER_DEFS_H
+#define DEF_GUARD_DIO_USER_DEFS_H
 
 /* 
 
@@ -14,6 +14,10 @@
 
  */
 
+/* some basic info abotu the DIO card */
+#define DIO_NUM_GROUPS 5
+#define PORTS_PER_GROUP 4
+
 /* start with port offsets... defined previously in */
 /*       the dio driver (kernel module) source      */
 #define PORT_A     0x00
@@ -21,6 +25,12 @@
 #define PORT_C_HI  0x02
 #define PORT_C_LO  0x12
 #define PORT_CNTRL 0x03
+
+/* the driver expects 2 chars -- most signifigant port and */
+/*     least significant data...                           */
+#define DIO_MSG_SIZE 2
+#define DIO_MSG_PORT 0
+#define DIO_MSG_DATA 1
 
 /* define masks for setting up control register settings */
 /*
@@ -55,6 +65,12 @@
 #define EAST_PMAT1 "/dev/dio1"
 #define WEST_PMAT0 "/dev/dio2"
 #define WEST_PMAT1 "/dev/dio3"
+
+#define RXFE_GRP 4
+#define EPM0_GRP 0 /* east phasing matrix 0 group */
+#define EPM1_GRP 1 /* east phasing matrix 1 group */
+#define WPM0_GRP 2 /* west phasing matrix 0 group */
+#define WPM1_GRP 3 /* west phasing matrix 1 group */
 
 /* commands that the control program can send */
 #define DIO_CNTRL_PROG_READY  '1'

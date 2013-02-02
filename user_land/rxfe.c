@@ -11,7 +11,7 @@
 #include "rxfe.h"
 #include "dio_user_defs.h"
 
-int ifmode;
+int fmode;
 
 struct RXFESettings if_settings;
 struct RXFESettings rf_settings;
@@ -42,7 +42,7 @@ unsigned char build_rxfe_addr(struct RXFESettings *s) {
   addr = AMP1_PART(s->amp1, addr);
   addr = AMP2_PART(s->amp2, addr);
   addr = AMP3_PART(s->amp3, addr);
-  addr = MODE_PART(s->if_mode, addr);
+  addr = MODE_PART(s->ifmode, addr);
 
   return addr;
   
@@ -80,7 +80,7 @@ void set_standard_rxfe_rf_settings(void) {
   rf_settings.att2 = 1;
   rf_settings.att3 = 1; 
   rf_settings.att4 = 1;
-  rf_settings.if_mode = 0;
+  rf_settings.ifmode = 0;
   
   return;
 } /* end set_standard_rxfe_rf_settings */
@@ -99,7 +99,7 @@ void set_standard_rxfe_if_settings(void) {
   if_settings.att2 = 1;
   if_settings.att3 = 1; 
   if_settings.att4 = 1;
-  if_settings.if_mode = 1;
+  if_settings.ifmode = 1;
 
   return;
 } /* end set_standard_rxfe_if_settings */
@@ -136,7 +136,7 @@ void set_new_rxfe_settings(struct RXFESettings *iF,
     if_settings.att2 = iF->att2;
     if_settings.att3 = iF->att3;
     if_settings.att4 = iF->att4;
-    if_settings.if_mode = iF->if_mode;
+    if_settings.ifmode = iF->ifmode;
   }
 
   if (rF) {
@@ -147,7 +147,7 @@ void set_new_rxfe_settings(struct RXFESettings *iF,
     rf_settings.att2 = rF->att2;
     rf_settings.att3 = rF->att3;
     rf_settings.att4 = rF->att4;
-    rf_settings.if_mode = rF->if_mode;
+    rf_settings.ifmode = rF->ifmode;
   }
 
 } /* end set_new_rxfe_standards */
@@ -161,7 +161,7 @@ int export_settings_to_rxfe(int rxfe) {
  
   int err = 0;
  
-  if (ifmode)
+  if (fmode)
     err = set_rxfe_addr(rxfe, &if_settings);
   else
     err = set_rxfe_addr(rxfe, &rf_settings);
@@ -176,7 +176,7 @@ int export_settings_to_rxfe(int rxfe) {
  */
 void set_if_mode(int new_mode) {
 
-  ifmode = new_mode;
+  fmode = new_mode;
 
   return;
 } /* end set_if_mode */

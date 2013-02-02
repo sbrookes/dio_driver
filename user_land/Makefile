@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -Wall -pedantic -std=c99
+CFLAGS= -I ./include/ -Wall -pedantic -std=c99
 SRCS=rxfe.c dio_control.c
 OBJS=rxfe.o dio_control.o
 EXEC=xdio_control

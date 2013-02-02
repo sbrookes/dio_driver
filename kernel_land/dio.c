@@ -225,7 +225,7 @@ static int dio_probe(struct pci_dev *dev,
     printk(KERN_ALERT "Failed to enable dio (%d)\n", rc);
     return rc;
   }
-
+ 
   /* must claim proprietary access to memory region mapped */
   /*      by the device                                    */
   rc = pci_request_regions(dev, dio_driver.name);
@@ -246,6 +246,10 @@ static int dio_probe(struct pci_dev *dev,
   /* set base for other regions */
   for ( i = 0; i < DIO_DEV_COUNT; i++ ) 
     dio_card[i].base = dio_card[0].base + i*DIO_DEV_SIZE ;
+  
+  /* basic configuration for outputs */
+  for ( i = 0; i < DIO_DEV_COUNT; i++ )
+    iowrite8(0x80, dio_card[i].base+3);
 
  #if DEBUG != 0
   printk(KERN_DEBUG "dio_probe() exit success\n");
@@ -409,7 +413,7 @@ static ssize_t dio_read(struct file *filp, char __user *buf,
 
   /* isolate data to be returned */
   if (DIO_PORTC == port)
-    data = PORTC_DATA(data);
+    data = PORTC_READ_DATA(data);
 
   /* merge data and port to return data */
   raw = ADD_DATA(raw, data);
@@ -452,7 +456,7 @@ static ssize_t dio_write(struct file *filp, const char __user *buf,
   int rc;
   dio_dev_data *dev;
   uint16_t raw;
-  uint8_t port, data;
+  uint8_t port, data, temp;
 
  #if DEBUG != 0
   printk(KERN_DEBUG "dio_write() entry\n");
@@ -498,8 +502,11 @@ static ssize_t dio_write(struct file *filp, const char __user *buf,
   } /* end switch statement */
 
   /* isolate data to be written */
-  if (DIO_PORTC == port)
-    data = PORTC_DATA(raw);
+  if (DIO_PORTC == port) {
+    /* retrieve existing portC data */
+    temp = ioread8(dev->base + port);
+    data = PORTC_WRITE_DATA(raw, temp);
+  }
   else /* data for A, B, or CNTRL */
     data = ABGET_DATA(raw);
 

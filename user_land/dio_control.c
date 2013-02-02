@@ -14,6 +14,76 @@
  */
 
 #include <stdio.h> 
-#include "control_program.h"
+#include <unistd.h>
+#include <fcntl.h>
+#include "rxfe.h"
 #include "dio_user_defs.h"
 
+int dev[DIO_NUM_GROUPS];
+
+int init_dio_sys(int if_mode) {
+
+  int err = 0;
+  unsigned char write_msg[DIO_MSG_SIZE];
+
+  /* open groups from DIO board */
+  dev[EPM0_GRP] = open(EAST_PMAT0, O_RDWR);
+  dev[EPM1_GRP] = open(EAST_PMAT1, O_RDWR);
+  dev[WPM0_GRP] = open(WEST_PMAT0, O_RDWR);
+  dev[WPM1_GRP] = open(WEST_PMAT1, O_RDWR);
+  dev[RXFE_GRP] = open(RXFE, O_RDWR);
+
+  /* initialize DIO board */
+  write_msg[DIO_MSG_PORT] = PORT_CNTRL;
+
+  /* all outputs */
+  write_msg[DIO_MSG_DATA] = CONTROL_BASIC;
+
+  write(dev[EPM0_GRP], write_msg, DIO_MSG_SIZE);
+  write(dev[WPM0_GRP], write_msg, DIO_MSG_SIZE);
+  write(dev[RXFE_GRP], write_msg, DIO_MSG_SIZE);
+
+  /* A, B, and Clo Input */
+  write_msg[DIO_MSG_DATA] = CONTROL_BASIC |
+                            PORT_C_LO_IN  |
+                            PORT_B_IN     |
+                            PORT_A_IN     ;
+
+  write(dev[EPM1_GRP], write_msg, DIO_MSG_SIZE);
+  write(dev[WPM1_GRP], write_msg, DIO_MSG_SIZE);
+
+  /* set up initial RXFE settings */
+  set_standard_rxfe_settings();
+  set_if_mode(if_mode);
+  err = export_settings_to_rxfe(dev[RXFE_GRP]);
+
+  return err;
+
+}
+
+/* case DIO_RXFE_RESET */
+int reset_rxfe_dio(void) {
+
+  return export_settings_to_rxfe(dev[RXFE_GRP]);
+
+}
+
+/* case DIO_RXFE_SETTINGS */
+int set_up_rxfe_dio(struct RXFESettings *iF, 
+		    struct RXFESettings *rF) {
+ 
+  set_new_rxfe_settings(iF, rF);
+  return export_settings_to_rxfe(dev[RXFE_GRP]);
+
+}
+
+int main(void) {
+
+  int err = 0;
+
+  err = init_dio_sys(IF_MODE);
+  
+  
+
+  return err;
+}
