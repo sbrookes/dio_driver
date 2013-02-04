@@ -15,15 +15,18 @@
 
 #include <stdio.h> 
 #include <unistd.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include "rxfe.h"
+#include "site.h"
 #include "dio_user_defs.h"
+#include "dio_control.h"
 
 int dev[DIO_NUM_GROUPS];
 
 int init_dio_sys(int if_mode) {
 
-  int err = 0;
+  int err = 0, i;
   unsigned char write_msg[DIO_MSG_SIZE];
 
   /* open groups from DIO board */
@@ -32,6 +35,15 @@ int init_dio_sys(int if_mode) {
   dev[WPM0_GRP] = open(WEST_PMAT0, O_RDWR);
   dev[WPM1_GRP] = open(WEST_PMAT1, O_RDWR);
   dev[RXFE_GRP] = open(RXFE, O_RDWR);
+
+  for ( i = 0; i < DIO_NUM_GROUPS; i++) {
+    if (!dev[i]) {
+      fprintf(stderr, "DIO Group %d failed to open\n", i);
+      err = -1;
+    }
+  }
+  if (err)
+    shutdown_dio_sys(err);
 
   /* initialize DIO board */
   write_msg[DIO_MSG_PORT] = PORT_CNTRL;
@@ -61,6 +73,31 @@ int init_dio_sys(int if_mode) {
 
 }
 
+int shutdown_dio_sys(int err) {
+  
+  int i;
+  
+  for ( i = 0; i < DIO_NUM_GROUPS; i++ ) {
+    if (dev[i])
+      close(dev[i]);
+  }
+
+  exit(err);
+  
+}
+
+/* case DIO_CtrlProg_READY */
+/* *********************** */
+
+/* case DIO_GET_TX_STATUS */
+/* ********************** */
+
+/* case DIO_PRETRIGGER */
+/* ******************* */
+
+/* case DIO_CLRFREQ */
+/* **************** */
+
 /* case DIO_RXFE_RESET */
 int reset_rxfe_dio(void) {
 
@@ -77,13 +114,24 @@ int set_up_rxfe_dio(struct RXFESettings *iF,
 
 }
 
+/* 
+
+   Main included here only for testing purposes
+
+   later, the tcp driver or (eventually) the control
+   program itself will compile with this file to 
+   call these functions directly from its own
+   main...
+
+ */
 int main(void) {
 
   int err = 0;
 
   err = init_dio_sys(IF_MODE);
   
-  
+  shutdown_dio_sys(err);
 
+  /* never reached */
   return err;
 }

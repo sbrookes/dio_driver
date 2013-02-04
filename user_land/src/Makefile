@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -I ./include/ -Wall -pedantic -std=c99
+CFLAGS= -I ../include/ -Wall -pedantic -std=c99
 SRCS=rxfe.c dio_control.c
 OBJS=rxfe.o dio_control.o
 EXEC=xdio_control
@@ -12,7 +12,9 @@ $(EXEC) : $(OBJS)
 $(OBJS) : $(SRCS)
 	$(CC) $(CFLAGS) -c $(SRCS)
 
-clean:
+
+celan: clean # accomadate a common typo...
+clean: 
 	rm -f *~
 	rm -f *#
 	rm -f $(EXEC) $(OBJS)

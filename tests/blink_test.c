@@ -1,4 +1,4 @@
-#include "../dio_user_defs.h"
+#include "dio_user_defs.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -55,7 +55,7 @@ int main(void) {
     return err;
 
   fprintf(stdout, "Checking\n");
-  fprintf(stdout, "-> ");
+  fprintf(stdout, "->  ");
   fflush(stdout);
 
   while (1) {

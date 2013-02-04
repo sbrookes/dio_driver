@@ -1,4 +1,4 @@
-#include "../dio_user_defs.h"
+#include "dio_user_defs.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>

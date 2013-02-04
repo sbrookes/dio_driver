@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../dio_user_defs.h"
+#include "dio_user_defs.h"
 
 int dev[DIO_NUM_GROUPS];
 
