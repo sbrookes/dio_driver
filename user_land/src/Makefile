@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS= -I ../include/ -ggdb -Wall -pedantic
-SRCS=rxfe.c dio_control.c pmat.c
-OBJS=rxfe.o dio_control.o pmat.o
+SRCS=rxfe.c dio_control.c pmat.c dio_tx_ops.c
+OBJS=rxfe.o dio_control.o pmat.o dio_tx_ops.o
 EXEC=xdio_control
 
 user: $(EXEC)

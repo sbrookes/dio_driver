@@ -15,6 +15,7 @@
 #define DEF_GUARD_ROSMSG_H
 
 #include "rtypes.h"
+#include "site.h"
 
 struct RXFESettings {
      uint32 ifmode;  /* IF Enabled */
@@ -147,10 +148,10 @@ struct SeqPRM {
   uint32 smdelay;
 };
 
-struct TXStatus {
-  int32 LOWPWR[30];
-  int32 AGC[30];
-  int32 status[30];
+struct tx_status {
+  int32 LOWPWR[MAX_TRANSMITTERS];
+  int32 AGC[MAX_TRANSMITTERS];
+  int32 status[MAX_TRANSMITTERS];
 };
 /* ROSMsg type definitions */
 

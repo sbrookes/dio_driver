@@ -104,7 +104,7 @@ int clear_freq_dio(struct ControlPRM *client) {
   err += dio_select_beam(client);
 
   /* clear frequency search can only be done in RF mode */
-  if (get_if_mode == IF_MODE) {
+  if (get_if_mode() == IF_MODE) {
     set_if_mode(RF_MODE);
     err += export_settings_to_rxfe();
     set_if_mode(IF_MODE);

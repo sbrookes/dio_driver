@@ -16,7 +16,7 @@ int shutdown_dio_sys(int err);
 
 /* implementation of legacy */
 /*  case DIO_CLRFREQ:       */
-int clear_freq_dio(struct ControlPRM *client)
+int clear_freq_dio(struct ControlPRM *client);
 
 /* implementation of legacy */
 /*  case DIO_RXFE_RESET:    */
