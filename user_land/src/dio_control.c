@@ -96,7 +96,22 @@ int shutdown_dio_sys(int err) {
 /* ******************* */
 
 /* case DIO_CLRFREQ */
-/* **************** */
+int clear_freq_dio(struct ControlPRM *client) {
+
+  int err = 0;
+  
+  err += dio_select_card(client);
+  err += dio_select_beam(client);
+
+  /* clear frequency search can only be done in RF mode */
+  if (get_if_mode == IF_MODE) {
+    set_if_mode(RF_MODE);
+    err += export_settings_to_rxfe();
+    set_if_mode(IF_MODE);
+  }
+  
+  return err;
+}
 
 /* case DIO_RXFE_RESET */
 int reset_rxfe_dio(void) {

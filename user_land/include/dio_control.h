@@ -15,7 +15,11 @@ int shutdown_dio_sys(int err);
 /* *** Functions replacing legacy switch statement *** */
 
 /* implementation of legacy */
-/*     case DIO_RXFE_RESET: */
+/*  case DIO_CLRFREQ:       */
+int clear_freq_dio(struct ControlPRM *client)
+
+/* implementation of legacy */
+/*  case DIO_RXFE_RESET:    */
 int reset_rxfe_dio(void);
 
 /* implementation of legacy */

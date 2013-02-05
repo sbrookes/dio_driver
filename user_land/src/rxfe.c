@@ -180,3 +180,13 @@ void set_if_mode(int new_mode) {
 
   return;
 } /* end set_if_mode */
+
+/*
+
+  retrieve IF mode
+
+*/
+int get_if_mode(void) {
+
+  return fmode;
+} /* end get_if_mode */

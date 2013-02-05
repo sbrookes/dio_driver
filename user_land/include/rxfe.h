@@ -22,6 +22,7 @@ void set_new_rxfe_settings(struct RXFESettings *iF,
 			   struct RXFESettings *rF);
 int export_settings_to_rxfe(void);
 void set_if_mode(int new_mode);
+int  get_if_mode(void) ;
 
 /* macros to build the rxfe addr */
 /* 
