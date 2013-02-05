@@ -17,10 +17,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include "rxfe.h"
-#include "site.h"
-#include "dio_user_defs.h"
 #include "dio_control.h"
+#include "dio_user_defs.h"
+#include "rxfe.h"
+#include "pmat.h"
+
 
 int dev[DIO_NUM_GROUPS];
 
@@ -67,7 +68,7 @@ int init_dio_sys(int if_mode) {
   /* set up initial RXFE settings */
   set_standard_rxfe_settings();
   set_if_mode(if_mode);
-  err = export_settings_to_rxfe(dev[RXFE_GRP]);
+  err = export_settings_to_rxfe();
 
   return err;
 
@@ -101,7 +102,7 @@ int shutdown_dio_sys(int err) {
 /* case DIO_RXFE_RESET */
 int reset_rxfe_dio(void) {
 
-  return export_settings_to_rxfe(dev[RXFE_GRP]);
+  return export_settings_to_rxfe();
 
 }
 
@@ -110,7 +111,7 @@ int set_up_rxfe_dio(struct RXFESettings *iF,
 		    struct RXFESettings *rF) {
  
   set_new_rxfe_settings(iF, rF);
-  return export_settings_to_rxfe(dev[RXFE_GRP]);
+  return export_settings_to_rxfe();
 
 }
 

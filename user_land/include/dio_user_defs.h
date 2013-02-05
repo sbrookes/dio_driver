@@ -22,8 +22,8 @@
 /*       the dio driver (kernel module) source      */
 #define PORT_A     0x00
 #define PORT_B     0x01
-#define PORT_C_HI  0x02
-#define PORT_C_LO  0x12
+#define PORT_C_LO  0x02
+#define PORT_C_HI  0x12
 #define PORT_CNTRL 0x03
 
 /* the driver expects 2 chars -- most signifigant port and */

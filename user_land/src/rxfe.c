@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "rxfe.h"
 #include "dio_user_defs.h"
+#include "rxfe.h"
 
 int fmode;
 
@@ -54,14 +54,14 @@ unsigned char build_rxfe_addr(struct RXFESettings *s) {
    settings to the RXFE...
 
  */
-int set_rxfe_addr(int dev, struct RXFESettings *s) {
+int set_rxfe_addr(struct RXFESettings *s) {
 
   unsigned char write_message[DIO_MSG_SIZE];
 
   write_message[DIO_MSG_DATA] = build_rxfe_addr(s);
   write_message[DIO_MSG_PORT] = PORT_B;
   
-  write(dev, write_message, DIO_MSG_SIZE);
+  write(dev[RXFE_GRP], write_message, DIO_MSG_SIZE);
 
   return 0;
 }
@@ -157,14 +157,14 @@ void set_new_rxfe_settings(struct RXFESettings *iF,
   Write the correct set of settings to the RXFE
 
  */
-int export_settings_to_rxfe(int rxfe) {
+int export_settings_to_rxfe(void) {
  
   int err = 0;
  
   if (fmode)
-    err = set_rxfe_addr(rxfe, &if_settings);
+    err = set_rxfe_addr(&if_settings);
   else
-    err = set_rxfe_addr(rxfe, &rf_settings);
+    err = set_rxfe_addr(&rf_settings);
 
   return err;
 } /* end export_settings_to_rxfe */

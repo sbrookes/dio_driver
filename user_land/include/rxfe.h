@@ -4,19 +4,23 @@
 
 #include "rosmsg.h"
 #include "rtypes.h"
+#include "dio_user_defs.h"
 
 #define IF_MODE 1
 #define RF_MODE 0
 
+/* global access to devices */
+extern int dev[DIO_NUM_GROUPS];
+
 /* Function Prototypes */
 unsigned char build_rxfe_addr(struct RXFESettings *s);
-int set_rxfe_addr(int dev, struct RXFESettings *s);
+int set_rxfe_addr(struct RXFESettings *s);
 void set_standard_rxfe_settings(void);
 void set_standard_rxfe_if_settings(void);
 void set_standard_rxfe_rf_settings(void);
 void set_new_rxfe_settings(struct RXFESettings *iF, 
 			   struct RXFESettings *rF);
-int export_settings_to_rxfe(int rxfe);
+int export_settings_to_rxfe(void);
 void set_if_mode(int new_mode);
 
 /* macros to build the rxfe addr */

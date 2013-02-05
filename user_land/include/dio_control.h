@@ -2,6 +2,12 @@
 #ifndef DEF_GUARD_DIO_CONTROL_H
 #define DIO_GUARD_DIO_CONTROL_H
 
+#include "rosmsg.h"
+#include "dio_user_defs.h"
+
+/* global device access */
+extern int dev[DIO_NUM_GROUPS];
+
 /* basic init and shutdown functions */
 int init_dio_sys(int if_mode);
 int shutdown_dio_sys(int err);
