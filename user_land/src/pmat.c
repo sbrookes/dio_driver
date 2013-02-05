@@ -7,7 +7,13 @@
 /*
 
   A file to deal with the phasing matrices... that includes
-  picking a card to address and a beam.
+  picking a card to address and a beam. This is part of the
+  suite of userland software to support the function of the 
+  ACCESS-DIO-120 card as it supports the SuperDARN Radar 
+  arrays, being developed in an attempt to port the QNX
+  based hardware-control to a Linux system.
+
+  PMAT = Phasing Matrix
 
   Author: Scott Brookes
   Date: 2.4.13
@@ -34,14 +40,8 @@
  */
 int dio_select_card(struct ControlPRM *client) {
 
-  int err = 0;
-  unsigned char write_msg[2], read_msg[2];
+  unsigned char write_msg[DIO_MSG_SIZE], read_msg[DIO_MSG_SIZE];
   int address, check, pmat;
-
-  /* pause structure */
-  struct timespec pause;
-  pause.tv_sec  = 0;
-  pause.tv_nsec = 5000;
   
   /* start with a blank write message */
   write_msg[DIO_MSG_PORT] = 0x00;
@@ -108,8 +108,8 @@ int dio_select_card(struct ControlPRM *client) {
 
   write(pmat, write_msg, DIO_MSG_SIZE);
 
-  /* carried from legacy code... unsure if the pause is necessary */
-  /* nanosleep(&pause, NULL); */
+  /* legacy code had a brief pause here but */
+  /* testing has suggested it is not needed */
 
   /* verify output */
   read_msg[DIO_MSG_PORT] = PORT_C_HI;
@@ -127,7 +127,7 @@ int dio_select_card(struct ControlPRM *client) {
     return -2;
   }
 
-  return err;
+  return 0;
 } /* end dio_select_card function */
 
 /*
@@ -149,7 +149,7 @@ int reverse_lsn_bits(int in, int n) {
     for ( bit = 1, j = 0; j < i; j++)
       bit *= 2;
 
-    if ( i < n / 2 ) /* least significant half of "in" */
+    if ( i < (n / 2) ) /* least significant half of "in" */
       /* mask bit of interest and move left appropriate distance */
       /*      for 32 bits move 31, 29, 27, ... 5, 3, 1           */
       out |= ( in & bit ) << ( n - 1 - 2*i );  
@@ -166,7 +166,8 @@ int reverse_lsn_bits(int in, int n) {
 /*
 
   Function used to, given a client program, generate 
-       the appropriate beam code.
+       the appropriate beam code. It writes the 
+       generated code to the appropriate PMAT.
 
   Note that any comment in this function to "legacy"
        refers to the code from _select_beam.c in the
@@ -192,11 +193,8 @@ int reverse_lsn_bits(int in, int n) {
  */
 int dio_select_beam(struct ControlPRM *client) {
 
-  int err = 0, pmat, beam_num, lo_nib, hi_nib;
-  double freq;
-
-  /* retrieve frequency from client */
-  freq = client->tfreq*1E3; /* line taken from legacy program */
+  int pmat, beam_code, beam_num, check = 0;
+  unsigned char write_msg[DIO_MSG_SIZE], read_msg[DIO_MSG_SIZE];
 
   /* retrieve beam number */
   beam_num = client->tbeam;
@@ -209,16 +207,46 @@ int dio_select_beam(struct ControlPRM *client) {
     beam_num = 0;
   }
 
-  /* mask out hi and low sections */
-  lo_nib = beam_num & 0x3; /* low  2 bits */
-  hi_nib = beam_num & 0xc; /* high 2 bits */
-  hi_nib >>= 2;
-
   /* define the radar being used */
   if (LEG_EAST_RADAR == client->radar) 
     pmat = dev[EPM0_GRP];
   else  /* client->radar == LEG_WEST_RADAR */
     pmat = dev[WPM0_GRP];
 
-  return err;  
+  /* generate beam code */
+  beam_code = reverse_lsn_bits(beam_num, BEAM_CODE_SIZE);
+
+  /* write code to pmat... */
+  /* low 8 bits to port A  */
+  write_msg[DIO_MSG_PORT] = PORT_A;
+  write_msg[DIO_MSG_DATA] = beam_code & 0xff; 
+
+  write(pmat, write_msg, DIO_MSG_SIZE);
+
+  /* high 5 bits to port B */
+  write_msg[DIO_MSG_PORT] = PORT_B;
+  write_msg[DIO_MSG_DATA] = (beam_code & 0x1f00) >> 8;
+
+  write(pmat, write_msg, DIO_MSG_SIZE);
+
+  /* legacy code had a brief pause here but */
+  /* testing has suggested it is not needed */
+
+  /* verify output */
+  read_msg[DIO_MSG_PORT] = PORT_A;
+  read(pmat, read_msg, DIO_MSG_SIZE);
+
+  check |= read_msg[DIO_MSG_DATA];  
+
+  read_msg[DIO_MSG_PORT] = PORT_B;
+  read(pmat, read_msg, DIO_MSG_SIZE);
+
+  check |= read_msg[DIO_MSG_DATA] << 8;
+
+  if ( check != beam_code) {
+    fprintf(stderr, "Writing address in select_beam failed\n");
+    return -2;
+  }
+
+  return 0;  
 } /* end dio_select_beam function */

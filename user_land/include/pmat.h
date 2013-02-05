@@ -16,6 +16,9 @@
  */
 #define MAX_BEAM 23
 
+/* as stated in pmat.c ... */
+#define BEAM_CODE_SIZE 13
+
 /* retrieve global access to devices */
 extern int dev[DIO_NUM_GROUPS]; 
 

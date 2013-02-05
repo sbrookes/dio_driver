@@ -22,7 +22,6 @@
 #include "rxfe.h"
 #include "pmat.h"
 
-
 int dev[DIO_NUM_GROUPS];
 
 int init_dio_sys(int if_mode) {
@@ -130,7 +129,7 @@ int main(void) {
   int err = 0;
 
   err = init_dio_sys(IF_MODE);
-  
+
   shutdown_dio_sys(err);
 
   /* never reached */
