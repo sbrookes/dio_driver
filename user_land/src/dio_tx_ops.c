@@ -67,13 +67,33 @@ int dio_select_tx(int radar, int tx_addr) {
 
 int dio_get_tx_status(int radar, struct tx_status *txstatus) {
 
-  int pmat;
+  unsigned char read_msg[DIO_MSG_SIZE];
+  int pmat, tx, err = 0;
 
   /* define the radar being used */
   if (LEG_EAST_RADAR == radar) 
     pmat = dev[EPM1_GRP];
   else  /* client->radar == LEG_WEST_RADAR */
     pmat = dev[WPM1_GRP];
+
+  /* find TX statuses */
+  read_msg[DIO_MSG_PORT] = PORT_C_LO;
+  for ( tx = 0; tx < MAX_TRANSMITTERS; tx++ ) {
+    
+    /* select tx and check status */
+    if ( !(err = dio_select_tx(radar, tx)) ) {
+      
+      read(pmat, read_msg, DIO_MSG_SIZE);
+      
+      /* legacy code sets precedent for assignments */
+      txstatus->status[tx] = (int) read_msg[DIO_MSG_DATA];
+      txstatus->AGC[tx] = (int) (read_msg[DIO_MSG_DATA] & 0x4) >> 2;
+      txstatus->LOWPWR[tx] = (int) (read_msg[DIO_MSG_DATA] & 0x2) >> 1;
+
+    }
+    else 
+      return err;
+  }
 
   return 0;
 } /* end dio_get_tx_status */
