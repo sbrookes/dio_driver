@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include "dio_control.h"
 #include "dio_user_defs.h"
+#include "dio_tx_ops.h"
 #include "rxfe.h"
 #include "pmat.h"
 
@@ -144,6 +145,8 @@ int main(void) {
   int err = 0;
 
   err = init_dio_sys(IF_MODE);
+
+  dio_select_tx(2, 3);
 
   shutdown_dio_sys(err);
 

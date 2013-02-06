@@ -408,15 +408,15 @@ static ssize_t dio_read(struct file *filp, char __user *buf,
 
   } /* end switch statement */
 
-  /* read data */
-  data = ioread8(dev->base + port);
+  /* clear space for and read data */
+  raw &= 0xff00;
+  raw |= ioread8(dev->base + port);
 
   /* isolate data to be returned */
-  if (DIO_PORTC == port)
-    data = PORTC_READ_DATA(data);
-
-  /* merge data and port to return data */
-  raw = ADD_DATA(raw, data);
+  if (DIO_PORTC == port) {
+    data = PORTC_READ_DATA(raw);
+    raw = ADD_DATA(raw, data);  
+  }
 
   /* return data (it will reverse it again) */
   raw = SWAP_BYTES(raw);
