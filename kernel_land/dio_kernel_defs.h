@@ -37,7 +37,6 @@
 #define DIO_CNTRL   0x03
 
 /* userland command processing masks */
-#define SWAP_BYTES(x) ((x << 8) | (x >> 8))
 #define GET_PORT(x) ((x & 0x0f00) >> 8)
 #define ABGET_DATA(x) (x & 0x00ff)
 #define PORTC_WRITE_DATA(x, y) (((x & 0xf000)>>12) ? ((x&0x000f)<<4)|(y&0x000f) : ((x&0x000f)|(y&0x00f0)))
@@ -66,7 +65,7 @@ typedef struct _sdarn_dio_driver_data {
 } dio_dev_data;
 
 /* prototypes for "methods" that will be implemented. */
-static int __init dio_dev_init(void);
+static int  __init dio_dev_init(void);
 static void __exit dio_dev_exit(void);
 
 static int dio_probe(struct pci_dev *dev, 

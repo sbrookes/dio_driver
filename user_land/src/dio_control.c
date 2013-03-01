@@ -30,6 +30,13 @@ int init_dio_sys(int if_mode) {
   int err = 0, i;
   unsigned char write_msg[DIO_MSG_SIZE];
 
+  /* little endian kernel will require least significant byte */
+  /*        to live at a lower memory address... should check */
+  if ( &write_msg[DIO_MSG_PORT] < &write_msg[DIO_MSG_DATA] ) {
+    printf("Byte order problem in init_dio_sys()\n");
+    exit(-10);
+  }
+
   /* open groups from DIO board */
   dev[EPM0_GRP] = open(EAST_PMAT0, O_RDWR);
   dev[EPM1_GRP] = open(EAST_PMAT1, O_RDWR);
@@ -91,7 +98,14 @@ int shutdown_dio_sys(int err) {
 /* *********************** */
 
 /* case DIO_GET_TX_STATUS */
-/* ********************** */
+int get_tx_status_dio(struct ControlPRM *client, struct tx_status *stat) {
+
+  int err = 0;
+
+  err += dio_get_tx_status(client->radar, stat);
+
+  return err;  
+}
 
 /* case DIO_PRETRIGGER */
 /* ******************* */

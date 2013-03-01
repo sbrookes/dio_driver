@@ -132,6 +132,8 @@ static int __init dio_dev_init(void) {
 
     dio_card[i].group = i;
 
+    dio_card[i].num = MKDEV(dio_maj_num, MINOR0 + i);
+
     dio_card[i].driver = &dio_driver;
     dio_card[i].fops   = &dio_fops  ;
 
@@ -140,8 +142,8 @@ static int __init dio_dev_init(void) {
     dio_card[i].cdev.owner = THIS_MODULE;
     dio_card[i].cdev.ops = &dio_fops;
 
-    /* register cdev with kernel */
-    rc = cdev_add(&dio_card[i].cdev, 
+    /* register cdev with kernel */ 
+    rc = cdev_add(&dio_card[i].cdev, /* magic #1  V is "count" */ 
 		  MKDEV(dio_maj_num, MINOR0 + i), 1);
     if (rc < 0) {
       printk(KERN_ALERT "Error adding dio cdev %d to sys\n", i);
@@ -159,12 +161,13 @@ static int __init dio_dev_init(void) {
 
   /* ERROR HANDLING */
  del_cdev:
-  /* delete the cdevs that succedded (up to i) */
-  for ( j = 0; j < i; j++ )
-    cdev_del(&dio_card[j].cdev);
 
   /* unregister char drivers */
   unregister_chrdev_region(dio_card[0].num, DIO_DEV_COUNT);
+
+  /* delete the cdevs that succedded (up to i) */
+  for ( j = 0; j < i; j++ )
+    cdev_del(&dio_card[j].cdev);
 
   return rc;
 
@@ -385,9 +388,6 @@ static ssize_t dio_read(struct file *filp, char __user *buf,
     return -EFAULT;
   }
 
-  /* data comes in backwards */
-  raw = SWAP_BYTES(raw);
-
   /* process the command */
   switch (GET_PORT(raw)) { /* isolate port offset */
   
@@ -418,8 +418,7 @@ static ssize_t dio_read(struct file *filp, char __user *buf,
     raw = ADD_DATA(raw, data);  
   }
 
-  /* return data (it will reverse it again) */
-  raw = SWAP_BYTES(raw);
+  /* return data */
   rc = copy_to_user(buf, &raw, 2);
   if (rc) {
     printk(KERN_ALERT "dio_read() bad copy_to_user\n");
@@ -469,17 +468,14 @@ static ssize_t dio_write(struct file *filp, const char __user *buf,
   if ( count != 2 ) { /* port byte and data byte */
     printk(KERN_ALERT "dio_write() got bad count (%d)\n", (int)count);
     return -EINVAL;
-   }
-
+  }
+  
   /* retrieve user data */ 
   rc = copy_from_user(&raw, buf, count);
   if (rc) {
     printk(KERN_ALERT "dio_write() bad copy_from_user\n");
     return -EFAULT;
   }
-
-  /* data comes in backwards */
-  raw = SWAP_BYTES(raw);
 
   /* process the command */
   switch (GET_PORT(raw)) { /* isolate port offset */

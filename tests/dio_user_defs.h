@@ -29,8 +29,8 @@
 /* the driver expects 2 chars -- most signifigant port and */
 /*     least significant data...                           */
 #define DIO_MSG_SIZE 2
-#define DIO_MSG_PORT 0
-#define DIO_MSG_DATA 1
+#define DIO_MSG_PORT 1
+#define DIO_MSG_DATA 0
 
 /* define masks for setting up control register settings */
 /*
