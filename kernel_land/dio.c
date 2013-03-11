@@ -35,7 +35,7 @@
 /* ******* */
 /* ************** */
 /* **************************** */
-#define DEBUG 0 /* debug option */
+#define DEBUG 1 /* debug option */
 /* non-zero to debug else zero  */
 /* **************************** */
 /* ************** */
@@ -43,25 +43,12 @@
 /* *** */
 /* */
 
-/*
-   ATTN: note that some of these may
-   be unneccesary... check later
-*/
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/slab.h>
-#include <linux/fs.h>
-#include <linux/errno.h>     /* error codes */
-#include <linux/types.h>
-#include <linux/proc_fs.h>
-#include <linux/fcntl.h>
+#include <linux/module.h>    /* for a kernel module */
+#include <linux/proc_fs.h>   /* file operations */
 #include <linux/ioport.h>    /* mapping io */
 #include <linux/kdev_t.h>    /* kernel device type */
 #include <linux/cdev.h>      /* char device type */
-#include <asm/system.h>
-#include <asm/uaccess.h>     /* user access */
-#include <linux/semaphore.h> /* synchronization */
+#include <asm/uaccess.h>     /* userspace access */
 #include "dio_kernel_defs.h" /* driver specific header */
 
 /* module information */
@@ -101,13 +88,15 @@ struct file_operations dio_fops = {
   .release = dio_release,
 };
 
-/* 
+/* *********************************** */
+/* ***** KERNEL MODULE FUNCTIONS ***** */
+/* *********************************** */
 
+/* 
    INIT - Module Initialization
 
    called by the system when this module is 
    loaded into the kernel. ( man insmod )
-
  */
 static int __init dio_dev_init(void) {
 
@@ -174,12 +163,10 @@ static int __init dio_dev_init(void) {
 } /* end dio_dev_init() function */
 
 /*
-
   EXIT - module exit routine
 
   called by the kernel when the module is 
   removed. ( man rmmod )
-
  */
 static void __exit dio_dev_exit(void) {
 
@@ -206,15 +193,16 @@ static void __exit dio_dev_exit(void) {
   return;
 } /* end dio_dev_exit() func */
 
-/*
+/* ************************************* */
+/* ******** PCI DEVICE FUNCTION ******** */
+/* ************************************* */
 
+/*
   PROBE - called when device is first assigned to driver
           that is, when the system recognizes that this
 	  driver is likely a match to xyz device.
-
  */
-static int dio_probe(struct pci_dev *dev,
-		     const struct pci_device_id *id) {
+static int dio_probe(struct pci_dev *dev, const struct pci_device_id *id) {
 
   int rc, i;
 
@@ -238,7 +226,7 @@ static int dio_probe(struct pci_dev *dev,
   }
   
   /* retrieve base address of mmapped region */
-  dio_card[0].len = pci_resource_len(dev, DIO_BAR);
+  dio_card[0].len  = pci_resource_len(dev, DIO_BAR);
   dio_card[0].base = pci_iomap(dev, DIO_BAR, dio_card[0].len+1);
   if (!dio_card[0].base) {
     printk(KERN_ALERT "Failed to find dio base address\n");
@@ -250,9 +238,9 @@ static int dio_probe(struct pci_dev *dev,
   for ( i = 0; i < DIO_DEV_COUNT; i++ ) 
     dio_card[i].base = dio_card[0].base + i*DIO_DEV_SIZE ;
   
-  /* basic configuration for outputs */
+  /* basic configuration for default (outputs) */
   for ( i = 0; i < DIO_DEV_COUNT; i++ )
-    iowrite8(0x80, dio_card[i].base+3);
+    iowrite8(0x80, dio_card[i].base+0x3);
 
  #if DEBUG != 0
   printk(KERN_DEBUG "dio_probe() exit success\n");
@@ -273,10 +261,8 @@ static int dio_probe(struct pci_dev *dev,
 } /* end of dio_probe() method */
 
 /*
-
   REMOVE - Called on removal of driver.. must undo
            all actions taken in probe method
-
  */
 static void dio_remove(struct pci_dev *dev) {
 
@@ -295,6 +281,10 @@ static void dio_remove(struct pci_dev *dev) {
   return;
 
 } /* end of remove method */
+
+/* ********************************* */
+/* ** CHAR DEVICE FILE OPERATIONS ** */
+/* ********************************* */
 
 /*
   OPEN - called when char device is opened
@@ -321,9 +311,7 @@ static int dio_open(struct inode *inode, struct file *filp) {
 } /* end of open method */
 
 /*
-
   RELEASE - called when char device is closed
-
  */
 static int dio_release(struct inode *inode, struct file *filp) {
 
@@ -345,14 +333,20 @@ static int dio_release(struct inode *inode, struct file *filp) {
 
    Note: Char devices have been registered for each group, but 
          not for each port. I will return 2 bytes - the first
-	 being the port and the second being the data. Note
+	 being the port and the second being the data. *Note*
 	 that I expect the user to place the desired port
 	 in the buffer where he wants me to place the data.
+
+   Note: Port C presents an interesting case because its width is 
+         four rather than 8 bits. The design choice here was that
+	 C hi/lo will be returned in its appropriate nybble to the
+	 user, with the other port being all zeros. 
 
    ** IMPT ** calling this from user-land should use the read()
          syscall directly rather than the fread() wrapper because
 	 fread() (seems to) change some of the parameters sent
-	 (mainly count)...
+	 (mainly count)... I think that that is because fread is
+	 for a block device not a char device.
 	            	 
 	 port A      = 0x00
 	 port B      = 0x01
@@ -434,7 +428,6 @@ static ssize_t dio_read(struct file *filp, char __user *buf,
 
 
 /*
-
   WRITE - used to write to device via char driver
 
    Note: Char devices have been registered for each group, but 
@@ -442,12 +435,16 @@ static ssize_t dio_read(struct file *filp, char __user *buf,
 	 the write function with the first being the offset
 	 necessary to address the requested port.
 
+   Note: Becuase the C port has two 4 bit components, a special
+         design choice had to be made. It was decided that the 
+	 least significant nybble of the data message will be 
+	 assigned to the appropriate port.
+
 	 port A      = 0x00{data}
 	 port B      = 0x01{data}
 	 port C(lo)  = 0x02{data}
 	 port C(hi)  = 0x12{data}
 	 port cntrl  = 0x03{data}
-
 */
 static ssize_t dio_write(struct file *filp, const char __user *buf,
 			 size_t count, loff_t *f_pos) {

@@ -39,7 +39,7 @@
 /* userland command processing masks */
 #define GET_PORT(x) ((x & 0x0f00) >> 8)
 #define ABGET_DATA(x) (x & 0x00ff)
-#define PORTC_WRITE_DATA(x, y) (((x & 0xf000)>>12) ? ((x&0x000f)<<4)|(y&0x000f) : ((x&0x000f)|(y&0x00f0)))
+#define PORTC_WRITE_DATA(x, y) (((x & 0xf000)>>12) ? (((x&0x000f)<<4)|(y&0x000f)) : ((x&0x000f)|(y&0x00f0)))
 #define PORTC_READ_DATA(x) (((x & 0xf000)>>12) ? ((x&0x00f0)>>4) : (x&0x000f))
 /* '--> based on the fact that as defined in the driver, user sends */
 /*      x02 for cLO and x12 for cHI so by isolating that MSnibble I */
